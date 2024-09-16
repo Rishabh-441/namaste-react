@@ -7,6 +7,7 @@ import Shimmer from "./Shimmer";
 const Body = () => {
     const [restList, setRestList] = useState([]);
     const [filteredRestraunt, setFilteredRestraunt] = useState([]);
+    const [message, setMessage] = useState("");
 
     const [searchText, setSearchText] = useState("");
 
@@ -25,8 +26,11 @@ const Body = () => {
     }
 
     //conditional rendering
-    return restList.length === 0 ? <Shimmer></Shimmer> : (
+    return filteredRestraunt.length === 0 ? <Shimmer></Shimmer> : (
         <div className="body">
+            <div className="message-box">
+                {message}
+            </div>
             <div className="filter">
                 <div className="search">
                     <input type="text" name="search-box" id="search-box" value={searchText} onChange={(e) => {
@@ -38,15 +42,17 @@ const Body = () => {
                         const filterdSearchList = restList.filter((res) => {
                             return res.info.name.toLowerCase().includes(searchText.toLowerCase());
                         });
-
-                        setFilteredRestraunt(filterdSearchList);
+                        if (filterdSearchList.length === 0) {
+                            setMessage("No Results Found!!")
+                        }
+                        else setFilteredRestraunt(filterdSearchList);
 
                     }}>Search</button>
                 </div>
 
                 <button className="filter-button" onClick={() => {
                     const filteredList = filteredRestraunt.filter((res) => 
-                        res.info.avgRating > 4.5
+                        res.info.avgRating > 4
                     );
                     setFilteredRestraunt(filteredList);
                 }}>Top Rated Restaunrants</button>
