@@ -1,9 +1,16 @@
-import React from "react";
+import React, {lazy, Suspense } from "react";
 import ReactDOM from "react-dom/client"
 import { jsx } from "react/jsx-runtime";
 import Header from "./components/Header";
 import Body from "./components/Body";
 import ResturantCard from "./components/ResturantCard";
+import { Outlet, RouterProvider, createBrowserRouter } from "react-router-dom";
+import Contact from "./components/Contact";
+import ErrorPage from "./components/ErrorPage";
+import RestaurantMenu from "./components/RestaurantMenu";
+import About from "./components/About";
+import '../index.css';
+
 
 const restaurantList = [ 
     {
@@ -1786,20 +1793,50 @@ const restaurantList = [
         "type": "WEBLINK"
       }
     }
-  ]
-
+  ];
+const Grocery = lazy(() => import("./components/Grocery.js"));
 const AppLayout = () => {
     return (
         <div className="app">
             {/* Header */}
             <Header/>
             {/* Body */}
-            <Body></Body>
+            <Outlet/>
             {/* Footer */}
         </div>
     )
 }
 
+const appRouter = createBrowserRouter([
+  {
+    path: "/",
+    element: <AppLayout/>,
+    children:[
+      {
+        path: "/",
+        element: <Body/>
+      },
+      {
+        path: "/about",
+        element: <About/>
+      },
+      {
+        path: "/contact",
+        element: <Contact/>
+      },
+      {
+        path: "/grocery",
+        element: <Suspense fallback={<h1>Loading...</h1>}><Grocery/></Suspense>
+      },
+      {
+        path: "/restaurants/:resId",
+        element: <RestaurantMenu/>
+      }
+    ],
+    errorElement: <ErrorPage/>
+  }
+])
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
-root.render(<AppLayout/>);
+root.render(<RouterProvider router={appRouter}/>);
