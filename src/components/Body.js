@@ -1,16 +1,20 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import restaurantList from "../utils/mockData"; // If you’re not using this, you can remove this import
 import ResturantCard, {withPromotedLabel} from "./ResturantCard";
 import { API_URL } from "../utils/constants";
 import Shimmer from "./Shimmer";
 import { Link } from "react-router-dom";
 import useOnlineStatus from "../utils/customHooks/useOnlineStatus";
+import UserContext from "../utils/customHooks/UserContext";
 
 const Body = () => {
     const [restList, setRestList] = useState([]);
     const [filteredRestraunt, setFilteredRestraunt] = useState([]);
     const [message, setMessage] = useState("");
     const [searchText, setSearchText] = useState("");
+
+    const {loggedInUser, setUserName} = useContext(UserContext);
+
 
     useEffect(() => {
         fetchData();
@@ -19,21 +23,33 @@ const Body = () => {
     const fetchData = async () => {
         const data = await fetch(API_URL);
         const json = await data.json();
-        const modJson = json.data.cards
-    .filter((card) => {
-        return card.card?.card?.gridElements?.infoWithStyle?.restaurants !== undefined;
-    })
-    .map((card) => card.card.card.gridElements.infoWithStyle.restaurants) // Extract the restaurants
-    .flat(); // Flatten the array if there are multiple restaurant arrays
-
         
-        // json?.data?.cards[2]?.card?.card?.gridElements?.infoWithStyle?.restaurants ||
-        //     json?.data?.cards[3]?.card?.card?.gridElements?.infoWithStyle?.restaurants ||
-        //     json?.data?.cards[4]?.card?.card?.gridElements?.infoWithStyle?.restaurants;
-        setRestList(modJson);
-        // console.log(modJson);
-        setFilteredRestraunt(modJson);
+        const modJson = json.data.cards
+            .filter((card) => {
+                return card.card?.card?.gridElements?.infoWithStyle?.restaurants !== undefined;
+            })
+            .map((card) => card.card.card.gridElements.infoWithStyle.restaurants)
+            .flat();
+    
+        // Use a Map to track unique restaurants by id
+        const uniqueRestaurantsMap = new Map();
+    
+        modJson.forEach((restaurant) => {
+            const restaurantId = restaurant.info.id; 
+            if (!uniqueRestaurantsMap.has(restaurantId)) {
+                uniqueRestaurantsMap.set(restaurantId, restaurant); // Add restaurant if id is not in map
+            }
+        });
+    
+        const uniqueRestaurants = Array.from(uniqueRestaurantsMap.values()); // Get unique restaurants
+    
+        setRestList(uniqueRestaurants);
+        setFilteredRestraunt(uniqueRestaurants);
     };
+
+    // console.log(restList);
+    
+    
 
     const onlineStatus = useOnlineStatus();
     const PromotedRestaurantCard = withPromotedLabel(ResturantCard);
@@ -73,6 +89,15 @@ const Body = () => {
                     >
                         Search
                     </button>
+                </div>
+
+                <div>
+                    <label htmlFor="userNameText">Enter User Name: </label>
+                    <input type="text" name="userNameText" id="userNameText" className="border-2 p-2 rounded-xl" value={loggedInUser} onChange={
+                        (e) => {
+                            setUserName(e.target.value);
+                        }
+                    }/>
                 </div>
 
                 <div className="flex space-x-2 mt-4 sm:mt-0">

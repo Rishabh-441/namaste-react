@@ -35,3 +35,14 @@
 - diagnostic
 - error handling
 - HTTPs hosting
+
+
+#React Toolkit
+ - Install @reduxjs/toolkit and react-redux
+ - Build our store
+ - Connect our store to our app
+ - slice (cart slice)
+ - dispatch (action)
+ - selector
+
+ 

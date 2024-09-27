@@ -10,21 +10,26 @@ const RestaurantMenu = () => {
     const [filteredRestMenuList, setFilteredRestMenuList] = useState([]);
     const { resId } = useParams();
     const [completeData, name] = useRestaurantMenu(resId);
-
-    const restaurantItemsList = completeData?.data?.cards[5]?.groupedCard?.cardGroupMap?.REGULAR?.cards.filter((card) => {
-        return card?.card?.card?.["@type"] === "type.googleapis.com/swiggy.presentation.food.v2.ItemCategory"
-    });
-    
-    console.log("this is restaurantItemslist")
-    console.log(restaurantItemsList);
-    
-    
-
-
-    if (restaurantItemsList?.length === 0) {
-        return <ShimmerMenu />;
-    }
     console.log(completeData);
+    const [showItems, setShowItems] = useState(0);
+
+
+    // Ensure completeData is properly loaded
+console.log("Complete Data:", completeData);
+
+const restaurantItemsList = completeData?.data?.cards.flatMap((cardGroup) => 
+    cardGroup?.groupedCard?.cardGroupMap?.REGULAR?.cards?.filter((card) => {
+        return card?.card?.card?.["@type"] === "type.googleapis.com/swiggy.presentation.food.v2.ItemCategory";
+    }) || []
+) || [];
+
+console.log("This is restaurantItemsList:", restaurantItemsList);
+
+if (restaurantItemsList.length === 0) {
+    return <ShimmerMenu />;
+}
+
+    // console.log(completeData);
 
     return (
         // <div></div> 
@@ -39,8 +44,10 @@ const RestaurantMenu = () => {
             
             <ul >
                 {
-                    restaurantItemsList?.map((card) => {
-                        return <RestaurantCategory key={card.card.card.title} card={card}></RestaurantCategory>
+                    restaurantItemsList?.map((card, index) => {
+                        return <RestaurantCategory key={card.card.card.title} card={card} showItems={index===showItems ? true : false} modifyShowItems={() => {
+                            setShowItems(showItems === index ? -1 : index);
+                        }}></RestaurantCategory>
                     })
                 }
             </ul>
